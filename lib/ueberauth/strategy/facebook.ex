@@ -145,7 +145,7 @@ defmodule Ueberauth.Strategy.Facebook do
     query = user_query(conn, client.token)
     path = "/me?#{query}"
     case OAuth2.Client.get(client, path) do
-      {:ok, %OAuth2.Response{status_code: 401, body: _body}} ->
+      {:error, %OAuth2.Response{status_code: 401, body: _body}} ->
         set_errors!(conn, [error("token", "unauthorized")])
       {:ok, %OAuth2.Response{status_code: status_code, body: user}}
         when status_code in 200..399 ->
