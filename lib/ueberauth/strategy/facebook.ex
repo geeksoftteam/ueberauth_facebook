@@ -27,6 +27,8 @@ defmodule Ueberauth.Strategy.Facebook do
      |> option(:allowed_request_params)
      |> Enum.map(&to_string/1)
 
+    config = Ueberauth.Config.get(conn, Ueberauth.Strategy.Facebook.OAuth)
+
     authorize_url = conn.params
       |> maybe_replace_param(conn, "auth_type", :auth_type)
       |> maybe_replace_param(conn, "scope", :default_scope)
@@ -35,7 +37,7 @@ defmodule Ueberauth.Strategy.Facebook do
       |> Enum.filter(fn {k, _v} -> Enum.member?(allowed_params, k) end)
       |> Enum.map(fn {k, v} -> {String.to_existing_atom(k), v} end)
       |> Keyword.put(:redirect_uri, callback_url(conn))
-      |> Ueberauth.Strategy.Facebook.OAuth.authorize_url!
+      |> Ueberauth.Strategy.Facebook.OAuth.authorize_url!(config)
 
     redirect!(conn, authorize_url)
   end
@@ -44,7 +46,9 @@ defmodule Ueberauth.Strategy.Facebook do
   Handles the callback from Facebook.
   """
   def handle_callback!(%Plug.Conn{params: %{"code" => code}} = conn) do
-    opts = [redirect_uri: callback_url(conn)]
+    config = Ueberauth.Config.get(conn, Ueberauth.Strategy.Facebook.OAuth)
+    opts = Keyword.merge(config, [redirect_uri: callback_url(conn)])
+
     client = Ueberauth.Strategy.Facebook.OAuth.get_token!([code: code], opts)
     token = client.token
 
@@ -58,7 +62,9 @@ defmodule Ueberauth.Strategy.Facebook do
   end
 
   def handle_callback!(%Plug.Conn{params: %{"token" => token}} = conn) do
-    client = Ueberauth.Strategy.Facebook.OAuth.client(token: token)
+    config = Ueberauth.Config.get(conn, Ueberauth.Strategy.Facebook.OAuth)
+    opts = Keyword.merge([token: token], config)
+    client = Ueberauth.Strategy.Facebook.OAuth.client(opts)
     fetch_user(conn, client)
   end
 
@@ -156,14 +162,14 @@ defmodule Ueberauth.Strategy.Facebook do
   end
 
   defp user_query(conn, token) do
-    %{"appsecret_proof" => appsecret_proof(token)}
+    config = Ueberauth.Config.get(conn, Ueberauth.Strategy.Facebook.OAuth)
+    %{"appsecret_proof" => appsecret_proof(token, config)}
     |> Map.merge(query_params(conn, :locale))
     |> Map.merge(query_params(conn, :profile))
     |> URI.encode_query
   end
 
-  defp appsecret_proof(token) do
-    config = Application.get_env(:ueberauth, Ueberauth.Strategy.Facebook.OAuth)
+  defp appsecret_proof(token, config) do
     client_secret = Keyword.get(config, :client_secret)
 
     token.access_token

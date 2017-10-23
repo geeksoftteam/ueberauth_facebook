@@ -26,14 +26,9 @@ defmodule Ueberauth.Strategy.Facebook.OAuth do
   of Ueberauth.
   """
   def client(opts \\ []) do
-    config = Application.get_env(:ueberauth, Ueberauth.Strategy.Facebook.OAuth)
-
-    opts =
-      @defaults
-      |> Keyword.merge(config)
-      |> Keyword.merge(opts)
-
-    OAuth2.Client.new(opts)
+    @defaults
+    |> Keyword.merge(opts)
+    |> OAuth2.Client.new
   end
 
   @doc """

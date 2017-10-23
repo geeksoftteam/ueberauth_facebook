@@ -24,7 +24,7 @@ defmodule Ueberauth.Facebook.Mixfile do
   end
 
   defp deps do
-    [{:ueberauth, "~> 0.4"},
+    [{:ueberauth, github: "geeksoftteam/ueberauth"},
      {:oauth2, "~> 0.9"},
 
      {:credo, "~> 0.8", only: [:dev, :test]},
