@@ -6,6 +6,7 @@ defmodule Ueberauth.Facebook.Mixfile do
 
   def project do
     [app: :ueberauth_facebook,
+     organization: "finotech",
      version: @version,
      name: "Ueberauth Facebook Strategy",
      package: package(),
@@ -24,7 +25,7 @@ defmodule Ueberauth.Facebook.Mixfile do
   end
 
   defp deps do
-    [{:ueberauth, github: "geeksoftteam/ueberauth"},
+    [{:ueberauth, "~> 0.5.0", organization: "finotech"},
      {:oauth2, "~> 0.9"},
 
      {:credo, "~> 0.8", only: [:dev, :test]},
